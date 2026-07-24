@@ -1,0 +1,71 @@
+# =========================================================
+# Central configuration for the SmolVLM domain-captioning
+# fine-tuning project (full fine-tune vs LoRA vs base).
+# =========================================================
+
+model:
+  # Small SmolVLM checkpoint -> fast to iterate on. Swap for
+  # "HuggingFaceTB/SmolVLM-Instruct" for the larger variant.
+  base_model_id: "HuggingFaceTB/SmolVLM-256M-Instruct"
+  # Where the "base model" (no training) results are cached.
+  cache_dir: "outputs/checkpoints/base"
+
+data:
+  # Any Hugging Face Hub dataset id, or "imagefolder" for a local folder.
+  dataset_name: "ybelkada/football-dataset"
+  data_dir: null            # only used when dataset_name == "imagefolder"
+  image_column: "image"
+  caption_column: "text"
+  train_split: "train"
+  val_split: null            # if null, a val split is carved out of train_split
+  val_fraction: 0.1
+  test_fraction: 0.1
+  max_samples: null          # cap dataset size for smoke tests, e.g. 64
+  max_target_length: 64
+  seed: 42
+
+training:
+  seed: 42
+  num_train_epochs: 3
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 2
+  gradient_accumulation_steps: 8
+  learning_rate_full: 1.0e-5
+  learning_rate_lora: 2.0e-4
+  weight_decay: 0.01
+  warmup_ratio: 0.03
+  max_steps: -1               # set to a small positive int for smoke tests
+  logging_steps: 10
+  eval_steps: 50
+  save_steps: 50
+  max_grad_norm: 1.0
+  fp16: false
+  bf16: true                  # set false + fp16 true on GPUs without bf16 support
+  gradient_checkpointing: true
+  output_dir_full: "outputs/checkpoints/full"
+  output_dir_lora: "outputs/checkpoints/lora"
+
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  bias: "none"
+  target_modules: ["q_proj", "k_proj", "v_proj", "o_proj"]
+  task_type: "CAUSAL_LM"
+
+generation:
+  max_new_tokens: 40
+  num_beams: 3
+  do_sample: false
+
+evaluation:
+  metrics: ["bleu", "cider"]
+  results_dir: "outputs/results"
+  compare_checkpoints: ["base", "full", "lora"]
+
+logging:
+  use_wandb: true
+  wandb_project: "smolvlm-lora-domain-captioning"
+  wandb_entity: null         # your W&B username/team; null = default
+  run_name_full: "smolvlm-full-finetune"
+  run_name_lora: "smolvlm-lora-finetune"

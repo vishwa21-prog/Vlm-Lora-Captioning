@@ -1,0 +1,13 @@
+torch>=2.2.0
+torchvision>=0.17.0
+transformers>=4.46.0
+accelerate>=0.34.0
+peft>=0.13.0
+datasets>=2.20.0
+Pillow>=10.0.0
+sacrebleu>=2.4.0
+pycocoevalcap>=1.2
+numpy>=1.26.0
+pyyaml>=6.0
+wandb>=0.17.0
+tqdm>=4.66.0
